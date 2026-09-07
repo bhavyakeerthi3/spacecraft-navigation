@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+.env
+*.egg
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+*.lcov
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Results (large campaign data — keep small fixtures and manifests)
+results/figures/*.png
+results/figures/*.pdf
+results/tables/*.csv
+# Keep: results/manifests/ and any checked-in representative runs
+
+# C++ build artefacts
+cpp/build/
+cpp/cmake-build-*/
+*.o
+*.a
+*.so
+*.dll
+*.exe
+
+# MATLAB artefacts
+matlab/*.asv
+matlab/slprj/
+
+# Large data
+*.zip
+*.tar.gz
+*.h5
+*.hdf5
+results/campaigns/
+
+# Frozen fixtures (small) are kept; mark large ones in .gitattributes

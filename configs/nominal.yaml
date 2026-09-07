@@ -1,0 +1,195 @@
+# ============================================================
+# configs/nominal.yaml
+# Nominal LEO navigation scenario.
+#
+# ALL physical quantities are in SI units unless noted.
+# Unit conversions happen only at config-load and plot boundaries.
+# ============================================================
+
+meta:
+  schema_version: "1.0"
+  description: "Nominal 500 km circular LEO coast scenario"
+  scenario: "nominal"
+
+# ------------------------------------------------------------------
+# Reproducibility
+# Each error source gets its own child stream derived from master_seed.
+# Stream names must match python/random_streams.py declarations.
+# ------------------------------------------------------------------
+random:
+  master_seed: 42
+  streams:
+    initial_error:    0
+    gnss_noise:       1
+    gnss_bias:        2
+    gnss_outliers:    3
+    accel_noise:      4
+    accel_bias_init:  5
+    accel_bias_walk:  6
+    gyro_noise:       7
+    gyro_bias_init:   8
+    gyro_bias_walk:   9
+    maneuver_error:   10
+    star_tracker:     11
+    relative_noise:   12
+
+# ------------------------------------------------------------------
+# Physical constants  (values from blueprint section 3)
+# ------------------------------------------------------------------
+constants:
+  mu_m3s2:      3.986004418e+14  # Earth gravitational parameter  [m3/s2]
+  Re_m:         6378137.0        # Earth equatorial radius        [m]  (WGS84)
+
+# ------------------------------------------------------------------
+# Orbit
+# ------------------------------------------------------------------
+orbit:
+  altitude_m:        500000.0    # [m]  above Re
+  inclination_deg:   51.6        # [deg]
+  raan_deg:          0.0         # right ascension of ascending node
+  arg_lat_deg:       0.0         # argument of latitude at t=0
+  # Derived initial condition computed in config.py from altitude + inclination
+
+# ------------------------------------------------------------------
+# Simulation time
+# ------------------------------------------------------------------
+time:
+  t_start_s:    0.0
+  t_end_s:      5700.0    # ~1 orbital period at 500 km
+  dt_nav_s:     1.0        # Navigation RK4 fixed step [s]
+
+# ------------------------------------------------------------------
+# Truth integration (DOP853)
+# ------------------------------------------------------------------
+truth_integrator:
+  method: "DOP853"
+  rtol: 1.0e-12
+  atol: 1.0e-12
+
+# ------------------------------------------------------------------
+# Force schedule
+# ------------------------------------------------------------------
+forces:
+  non_gravitational_enabled: false
+  # Finite burn defined in maneuver.yaml; disabled here
+
+# ------------------------------------------------------------------
+# GNSS sensor
+# ------------------------------------------------------------------
+gnss:
+  enabled: true
+  rate_hz: 1.0            # Measurement rate [Hz]
+  # White-noise standard deviations (1-sigma, per axis)
+  pos_noise_1sigma_m:    3.0     # [m/axis]
+  vel_noise_1sigma_ms:   0.03    # [m/s/axis]
+  # Constant bias (zero in nominal; stress config enables it)
+  bias_enabled: false
+  bias_pos_m:    [0.0, 0.0, 0.0]
+  bias_vel_ms:   [0.0, 0.0, 0.0]
+  # Gauss-Markov bias (alternative; overrides constant if enabled)
+  gm_bias_enabled: false
+  gm_tau_s:        600.0
+  gm_sigma_pos_m:  1.0
+  gm_sigma_vel_ms: 0.01
+  # Outliers
+  outliers_enabled: false
+  outlier_prob:     0.01
+  outlier_pos_m:    50.0
+  outlier_vel_ms:   0.5
+  # Latency
+  latency_s:        0.0
+  # Outage window [t_start, t_end) seconds — empty means no outage
+  outage_windows: []
+
+# ------------------------------------------------------------------
+# IMU sensor
+# ------------------------------------------------------------------
+imu:
+  enabled: true
+  rate_hz: 10.0           # Sample rate [Hz]
+
+  # Accelerometer
+  accel:
+    # White noise: spectral density [m/s / sqrt(Hz)] → stored as (m/s)²/Hz = m²/s³
+    noise_density_m2s3:  1.0e-10   # = (1e-5 m/s²)² per (1/dt) Hz
+    # Initial bias [m/s²/axis], drawn as N(0, bias_init_1sigma²·I)
+    bias_init_1sigma_ms2: 1.0e-4
+    # Bias random-walk intensity [m/s² / sqrt(s)] → (m/s²)²/s = m²/s⁵
+    bias_walk_density_m2s5: 1.0e-14  # = (1e-7 m/s²/√s)²
+    # Scale factor error [ppm per axis]; set 0 to disable
+    scale_factor_ppm:   [0.0, 0.0, 0.0]
+    # Cross-axis misalignment [mrad]; upper triangular, row-major, zero diagonal
+    misalignment_mrad:  [0.0, 0.0, 0.0]   # [xy, xz, yz] elements
+    # Enable switches
+    noise_enabled:  true
+    bias_enabled:   true
+    walk_enabled:   true
+    scale_enabled:  false
+    misalign_enabled: false
+    latency_s:      0.0
+
+  # Gyroscope
+  gyro:
+    noise_density_rad2s:  1.0e-10   # (1e-5 rad/s)² per Hz
+    bias_init_1sigma_rads: 1.0e-4
+    bias_walk_density_rad2s3: 1.0e-14
+    scale_factor_ppm:   [0.0, 0.0, 0.0]
+    misalignment_mrad:  [0.0, 0.0, 0.0]
+    noise_enabled:  true
+    bias_enabled:   true
+    walk_enabled:   true
+    scale_enabled:  false
+    misalign_enabled: false
+    latency_s:      0.0
+
+# ------------------------------------------------------------------
+# Navigation filter — EKF
+# ------------------------------------------------------------------
+filter:
+  # State: [rx, ry, rz, vx, vy, vz, bax, bay, baz]  (9 states)
+  state_dim: 9
+
+  # Initial prior covariance (1-sigma per axis)
+  init:
+    pos_1sigma_m:     30.0
+    vel_1sigma_ms:    0.1
+    bias_1sigma_ms2:  1.0e-4
+
+  # Process noise spectral densities (matched to imu section in nominal)
+  process_noise:
+    # Acceleration white noise [m²/s³] — must match imu.accel.noise_density
+    Qa_m2s3: 1.0e-10
+    # Bias random walk [m²/s⁵] — must match imu.accel.bias_walk_density
+    Qb_m2s5: 1.0e-14
+
+  # Measurement noise — must match gnss section in nominal
+  gnss_R:
+    pos_1sigma_m:   3.0
+    vel_1sigma_ms:  0.03
+
+  # Chi-squared gate (6-DOF NIS, probability)
+  gate_probability: 0.999
+
+  # Attitude — known external source (Phase 1–7 assumption)
+  attitude:
+    source: "identity"   # identity = no rotation; "prescribed" uses frames.py schedule
+
+# ------------------------------------------------------------------
+# Evaluation thresholds (project-defined, not Aule Space specs)
+# ------------------------------------------------------------------
+evaluation:
+  convergence_pos_m:   10.0    # Position error < 10 m
+  convergence_vel_ms:  0.1     # Velocity error < 0.1 m/s
+  convergence_window_s: 60.0   # Continuously for 60 s
+  neis_alpha: 0.05             # Two-tailed significance for NEES/NIS bounds
+
+# ------------------------------------------------------------------
+# Output
+# ------------------------------------------------------------------
+output:
+  results_dir: "results"
+  figures_dir: "results/figures"
+  tables_dir:  "results/tables"
+  manifests_dir: "results/manifests"
+  figure_dpi:  300
+  figure_format: ["png", "pdf"]

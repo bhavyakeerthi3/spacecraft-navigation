@@ -1,0 +1,15 @@
+# configs/outage.yaml
+# Override nominal.yaml for the GNSS outage experiment.
+# All keys not listed here inherit from nominal.yaml.
+meta:
+  schema_version: "1.0"
+  description: "300 s GNSS outage at t=[1800, 2100) s"
+  scenario: "outage"
+  base_config: "nominal.yaml"
+
+gnss:
+  outage_windows:
+    - [1800.0, 2100.0]   # [t_start, t_end) seconds
+
+random:
+  master_seed: 42   # Same seed → same noise realization, only GNSS delivery differs

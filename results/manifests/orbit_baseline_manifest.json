@@ -1,0 +1,36 @@
+{
+  "experiment": "orbit_baseline",
+  "phase": 1,
+  "timestamp": "2026-09-07T16:55:54.802135+00:00",
+  "config": {
+    "altitude_m": 500000.0,
+    "inclination_deg": 51.6,
+    "mu_m3s2": 398600441800000.0,
+    "Re_m": 6378137.0,
+    "period_s": 5676.9780285258585,
+    "n_eval_points": 500,
+    "integrator": "DOP853",
+    "rtol": 1e-12,
+    "atol": 1e-12
+  },
+  "summary": {
+    "max_pos_error_m": 1.551110421917105e-05,
+    "final_pos_error_m": 1.3812875731976399e-05,
+    "max_vel_error_ms": 1.5153842369127115e-08,
+    "final_vel_error_ms": 1.4993389833223546e-08,
+    "max_energy_drift_rel": 2.399282290186065e-12,
+    "max_hmag_drift_rel": 1.1997662408397166e-12
+  },
+  "thresholds": {
+    "pos_error_m": 0.1,
+    "vel_error_ms": 0.0001,
+    "energy_drift_rel": 1e-09,
+    "hmag_drift_rel": 1e-09
+  },
+  "passed": {
+    "pos_error": true,
+    "vel_error": true,
+    "energy_drift": true,
+    "hmag_drift": true
+  }
+}

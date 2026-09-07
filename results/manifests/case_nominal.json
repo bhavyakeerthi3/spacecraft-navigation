@@ -1,0 +1,16 @@
+{
+  "scenario": "nominal",
+  "hash": "21e278bfea7a",
+  "timestamp": "2026-09-07T17:23:21.536709+00:00",
+  "duration_s": 5700.0,
+  "n_orbits": 1.004055321573989,
+  "gnss_packets": 5701,
+  "scores": {
+    "B1_pos_rmse_m": 5.2392552952631855,
+    "B1_vel_rmse_ms": 0.051521934508959664,
+    "B2_pos_rmse_m": 0.286881284677111,
+    "B2_vel_rmse_ms": 0.0019816441995051935,
+    "B2_mean_NEES_pos": 2.009386188867029,
+    "B2_mean_NIS": 5.95856696265515
+  }
+}
